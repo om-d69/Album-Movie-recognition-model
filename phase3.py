@@ -4,14 +4,14 @@ import numpy as np
 import pandas as pd
 from tensorflow.keras.preprocessing import image
 
-# Define Project Directory
+
 PROJECT_DIR = "C:\\Users\\omdes\\Documents\\Om\\opencvfun\\opencv_album_recog_proj"
 
-# Updated Dataset Paths for Movie Posters by Raman
+
 MOVIE_DATASET_PATH = os.path.join(PROJECT_DIR, "MoviePosters_raman", "Multi_Label_dataset", "images")
 MOVIE_CSV_PATH = os.path.join(PROJECT_DIR, "MoviePosters_raman", "Multi_Label_dataset", "train.csv")
 
-# Function to Read CSV with Automatic Encoding Detection
+
 def read_csv_with_fallback_encoding(file_path, encodings=['utf-8', 'latin1', 'cp1252', 'ISO-8859-1']):
     for encoding in encodings:
         try:
@@ -23,28 +23,28 @@ def read_csv_with_fallback_encoding(file_path, encodings=['utf-8', 'latin1', 'cp
     print("All standard encodings failed. Using utf-8 with errors='replace'...")
     return pd.read_csv(file_path, encoding='utf-8', errors='replace')
 
-# Cleanup existing movie batches only
+
 print("🧹 Cleaning up old movie batch files...")
 for file in os.listdir(PROJECT_DIR):
     if file.startswith("images_batch_movie") or file.startswith("labels_batch_movie"):
         os.remove(os.path.join(PROJECT_DIR, file))
         print(f"🗑️ Deleted {file}")
 
-# Load movie CSV
+
 print("📥 Loading movie CSV...")
 movie_labels = read_csv_with_fallback_encoding(MOVIE_CSV_PATH)
 
-# Ensure required columns exist
+
 if not {'filename', 'genre'}.issubset(movie_labels.columns):
     raise ValueError("CSV must contain 'filename' and 'genre' columns.")
 
-# Drop rows with missing filenames
+
 movie_labels = movie_labels[movie_labels['filename'].notna()]
 
-# Save cleaned CSV (optional)
+
 movie_labels.to_csv(os.path.join(PROJECT_DIR, "MoviePosters_Raman_fixed.csv"), index=False)
 
-# Function to load and save reduced-size batches
+
 def save_batches(folder_path, labels_df, label_key, prefix, batch_size=5000):
     images, labels = [], []
     batch_count = 0
