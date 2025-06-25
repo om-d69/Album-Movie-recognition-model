@@ -24,14 +24,14 @@ def read_csv_with_fallback_encoding(file_path, encodings=['utf-8', 'latin1', 'cp
     return pd.read_csv(file_path, encoding='utf-8', errors='replace')
 
 
-print("🧹 Cleaning up old movie batch files...")
+print(" Cleaning up old movie batch files...")
 for file in os.listdir(PROJECT_DIR):
     if file.startswith("images_batch_movie") or file.startswith("labels_batch_movie"):
         os.remove(os.path.join(PROJECT_DIR, file))
         print(f"🗑️ Deleted {file}")
 
 
-print("📥 Loading movie CSV...")
+print(" Loading movie CSV...")
 movie_labels = read_csv_with_fallback_encoding(MOVIE_CSV_PATH)
 
 
@@ -56,12 +56,12 @@ def save_batches(folder_path, labels_df, label_key, prefix, batch_size=5000):
         img_path = os.path.join(folder_path, filename)
 
         if not os.path.exists(img_path):
-            print(f"❌ Image not found: {img_path}")
+            print(f" Image not found: {img_path}")
             continue
 
         img = cv2.imread(img_path)
         if img is None:
-            print(f"⚠️ Failed to read image: {img_path}")
+            print(f" Failed to read image: {img_path}")
             continue
 
         img = cv2.resize(img, (64, 64))
@@ -74,18 +74,18 @@ def save_batches(folder_path, labels_df, label_key, prefix, batch_size=5000):
         if len(images) == batch_size:
             np.save(os.path.join(PROJECT_DIR, f"images_batch_{prefix}_{batch_count}.npy"), np.array(images, dtype=np.uint8))
             np.save(os.path.join(PROJECT_DIR, f"labels_batch_{prefix}_{batch_count}.npy"), np.array(labels))
-            print(f"💾 Saved batch {batch_count} with {len(images)} images")
+            print(f" Saved batch {batch_count} with {len(images)} images")
             images, labels = [], []
             batch_count += 1
 
     if images:
         np.save(os.path.join(PROJECT_DIR, f"images_batch_{prefix}_{batch_count}.npy"), np.array(images, dtype=np.uint8))
         np.save(os.path.join(PROJECT_DIR, f"labels_batch_{prefix}_{batch_count}.npy"), np.array(labels))
-        print(f"💾 Saved final batch {batch_count} with {len(images)} images")
+        print(f" Saved final batch {batch_count} with {len(images)} images")
 
-    print(f"✅ Done processing {processed} images from {prefix} dataset.")
+    print(f" Done processing {processed} images from {prefix} dataset.")
 
 # Save only movie batches
-print("📦 Processing movie dataset...")
+print(" Processing movie dataset...")
 save_batches(MOVIE_DATASET_PATH, movie_labels, 'genre', 'movie')
 
