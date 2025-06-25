@@ -33,12 +33,12 @@ X, y = load_batches("movie", max_batches=10)
 
 X = X.astype("float32") / 255.0
 
-# ✅ Encode genres properly now
+# Encode genres properly now
 label_encoder = LabelEncoder()
 y = [str(label).strip() for label in y]  # clean up
 y_encoded = label_encoder.fit_transform(y)
 
-# 🚫 Check for label explosion
+#  Check for label explosion
 num_classes = len(label_encoder.classes_)
 if num_classes > 500:
     print("Top 10 classes:", label_encoder.classes_[:10])
@@ -58,7 +58,7 @@ model = Sequential([
 
 model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
 
-print("✅ Starting training...")
+print(" Starting training...")
 history = model.fit(X, y_categorical, epochs=5, batch_size=32, validation_split=0.2)
 
 model.save(os.path.join(PROJECT_DIR, "album_movie_classifier.h5"))
