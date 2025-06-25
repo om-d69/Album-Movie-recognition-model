@@ -63,4 +63,4 @@ history = model.fit(X, y_categorical, epochs=5, batch_size=32, validation_split=
 
 model.save(os.path.join(PROJECT_DIR, "album_movie_classifier.h5"))
 np.save(os.path.join(PROJECT_DIR, "class_labels.npy"), label_encoder.classes_)
-print("✅ Model and labels saved!")
+print(" Model and labels saved!")
