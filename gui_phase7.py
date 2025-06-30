@@ -6,7 +6,7 @@ import pandas as pd
 import os
 import time
 
-# ==== CONFIGURATION ====
+# CONFIGURATION 
 PROJECT_DIR = r"C:\Users\omdes\Documents\Om\opencvfun\opencv_album_recog_proj"
 MODEL_PATH = os.path.join(PROJECT_DIR, "album_movie_classifier.h5")
 LABELS_PATH = os.path.join(PROJECT_DIR, "train_fixed.csv")
@@ -14,14 +14,14 @@ LINKS_CSV_PATH = os.path.join(PROJECT_DIR, "movie_with_links.csv")
 CONFIDENCE_THRESHOLD = 0.20
 DELAY_SECONDS = 12  # Delay before opening browser
 
-# ==== LOAD MODEL ====
+#LOAD MODEL 
 model = tf.keras.models.load_model(MODEL_PATH)
 
-# ==== LOAD CLASS LABELS ====
+# LOAD CLASS LABELS
 df_labels = pd.read_csv(LABELS_PATH)
 class_labels = df_labels.columns[2:].tolist()  # Assuming first two columns are filename and genre
 
-# ==== LOAD LINKS CSV ====
+# LOAD LINKS CSV
 df_links = pd.read_csv(LINKS_CSV_PATH)
 df_links = df_links.dropna(subset=['genre', 'imdb_link'])  # remove rows with missing genre or link
 
@@ -30,7 +30,7 @@ df_links['genre'] = df_links['genre'].apply(
     lambda g: ", ".join(sorted([s.strip() for s in g.split(",")])) if isinstance(g, str) else ""
 )
 
-# ==== INITIALIZE CAMERA ====
+#INITIALIZE CAMERA 
 cap = cv2.VideoCapture(0)
 start_time = time.time()
 link_opened = False
@@ -48,7 +48,7 @@ while True:
     x2 = x1 + box_size
     y2 = y1 + box_size
 
-    # Draw green Face ID–style box
+    # Draw green style box
     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
     # Crop, resize, preprocess
