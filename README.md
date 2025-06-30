@@ -47,96 +47,139 @@ This is a real-time **Movie Poster Recognition System** that uses **OpenCV + Ten
 
 >  Current classifier accuracy is limited by genre label complexity and class overlaps. Future improvements will involve label simplification and deeper architectures (EfficientNet with Transfer Learning).
 
-**PROCEDURE FOR THIS PROJECT FROM THE GROUND UP**
+Sure! Here's your neatly formatted and structured project procedure, exactly as you provided but cleaned up for clarity and presentation:
 
-**STEP1 1**: **Dataset Collection and Curation**
--Objective: Collect and organize the raw dataset of movie posters and prepare basic metadata.
-Details:
--Source: Kaggle Dataset – "Movie Posters by Raman"
--File types:
--images/ folder containing .jpg or .png poster files.
--train.csv or MoviePosters_Raman_fixed.csv containing two key columns:
--filename – Name of the image file.
--genre – A comma-separated string of genres like "Action, Drama, Thriller".
--Outcome: You now have a dataset folder and metadata CSVs that will feed into preprocessing.
+---
 
-**STEP 2**: **Fixing the Dataset Labels**
-Objective: Clean, normalize, or reduce the number of classes.
-Details:
--Fix inconsistencies in the genre column (extra spaces, casing, missing values).
--Clean a CSV like train_fixed.csv or movie_with_links.csv with:
--Genre combinations as label.
--include direct IMDb links (imdb_link column).
--Outcome: A clean, minimal CSV ready for preprocessing and label encoding.
+#  Movie Poster Genre Classification using CNN + OpenCV
 
-**STEP 3**: **Image Preprocessing & Saving Batches**
--Objective: Preprocess images and save them into .npy batches for efficient training.
-Details:
--Reads each image from images/ folder based on filenames in the CSV.
--Resizes all images to 64×64 (as required by the CNN input).
--Converts the images into NumPy arrays and stores them in batches like:
--images_batch_movie_0.npy
--labels_batch_movie_0.npy
--Each label corresponds to the genre string.
--Outcome: Efficient .npy files containing both images and label arrays for model training.
+**Author:** Om Deshpande
+**Program:** B.Tech Cyber Physical Systems
+**Institute:** Manipal Institute of Technology
 
-**STEP 4**: **CNN Model Training**
--Objective: Train a CNN model on the preprocessed image and label batches.
-Details:
--Loads image batches and label batches from Phase 3.
--Encodes genre strings into integer labels using LabelEncoder.
--Uses to_categorical() to one-hot encode the labels.
--Defines and compiles a CNN model (Conv2D → MaxPool → Flatten → Dense).
--Trains the model and saves it to:
--album_movie_classifier.h5
--Outcome: A trained Keras .h5 model that can classify movie poster genres.
+---
 
-**STEP 5**: **Real-Time Poster Prediction via Webcam**
--Objective: Use webcam to detect a poster and display the top predicted genre.
-Details:
--Opens webcam using cv2.VideoCapture(0)
--Defines a green Face ID–style box at the center of the frame.
--Captures the image inside that box and resizes it to 64×64.
--Predicts using the CNN model from Phase 4.
--Displays the predicted genre and confidence on screen if above threshold.
--Outcome: Real-time webcam classification of posters when held in front of the screen.
+##  PROCEDURE FOR THIS PROJECT FROM THE GROUND UP
 
-**STEP 6**: **IMDb Link Opening + Face Box Integration**
--Objective: Extend Phase 5 by opening a web browser to show the IMDb link for the predicted genre/movie.
-Details:
--Uses prediction from the CNN model to find the correct genre string.
--Looks up this genre in the CSV (movie_with_links.csv) to find the associated IMDb link.
--Opens the IMDb link using webbrowser.open() (once per detection).
--Introduces a 10–15 second delay before triggering prediction to let you position your phone/poster inside the green box.
--Adds logic to prevent repeated link openings unless the prediction changes.
--Outcome: Real-time genre classification AND browser redirection to IMDb — movie poster.
+### **STEP 1: Dataset Collection and Curation**
 
-**FILE STRUCTURE DEFINED(ordered):**
+**Objective:** Collect and organize the raw dataset of movie posters and prepare basic metadata.
+**Details:**
 
--phase1_cam_feed.py: Initializes and tests your system’s webcam using OpenCV to confirm camera access.
--phase2.py: Loads the ResNet50 model and performs real-time image classification using webcam frames with basic predictions from the ImageNet dataset.
--phase3.py: Preprocesses the MoviePosters_Raman dataset: reads the CSV, cleans up labels, resizes images, and saves them in batch .npy files for efficient training.
--phase4.py: Loads and previews image batches saved from Phase 3 to confirm correct formatting, shapes, and label associations. Mostly for verification and debugging.
--train_model.py: Trains an EfficientNetB0 model on the preprocessed image batches and saves the final trained model (.h5) and encoded class labels (.npy).
--(optional): image_classifier.py: Tests image classification
--webcam_predictor_phase6.py: Opens your webcam and uses motion detection to trigger genre predictions using the trained model. Draws a green box on the region of interest and overlays the predicted class with confidence.
--gui_phase7.py: Displaying predictions and clickable links (IMDb) and includes delayed link opening + face-like box behavior.
+* **Source:** Kaggle Dataset – *"Movie Posters by Raman"*
+* **File types:**
 
-**LIMITATIONS AND FUTUTRE WORKINGS**
- Known Limitations:
- -Low Accuracy for Genre Detection: Model sometimes outputs the same class (e.g., "Drama") due to noisy labels and imbalance in dataset
- -IMDb Link Mismatch: If multiple movies share the same genre, the first match from CSV is used — not the best match.
- -Only Poster Image Support: Faces, scenery, or blurred photos will not be recognized
- -64×64 Size Limitation: Higher resolution would improve predictions, but increases model complexity
- **Planned Improvements**:
- -Improve genre classification using multi-label encoding or title recognition
- -Add support for Spotify album classification with separate model
- -Add Tkinter GUI for better UX with clickable links and image thumbnails
- -Use YOLOv8/MediaPipe for poster detection before classification
- -Optimize for mobile and low-light webcam inputs
+  * `images/` folder containing `.jpg` or `.png` poster files
+  * `train.csv` or `MoviePosters_Raman_fixed.csv` containing:
 
-**AUTHOR**:
-*Om Deshpande*
-*B.Tech: Cyber Physical Systems*
-*Manipal Institute of Technology*
+    * `filename`: Name of the image file
+    * `genre`: A comma-separated string of genres like `"Action, Drama, Thriller"`
+      **Outcome:** Dataset folder and metadata CSVs are ready for preprocessing.
+
+---
+
+### **STEP 2: Fixing the Dataset Labels**
+
+**Objective:** Clean, normalize, and reduce the number of classes.
+**Details:**
+
+* Fix inconsistencies in the `genre` column (extra spaces, casing, missing values)
+* Cleaned CSV file (e.g., `train_fixed.csv` or `movie_with_links.csv`) should include:
+
+  * `genre` combinations as label
+  * `imdb_link` column with direct IMDb links
+    **Outcome:** A clean, minimal CSV ready for preprocessing and label encoding.
+
+---
+
+### **STEP 3: Image Preprocessing & Saving Batches**
+
+**Objective:** Preprocess images and save them into `.npy` batches for efficient training.
+**Details:**
+
+* Read each image from the `images/` folder using filenames in the CSV
+* Resize images to **64×64**
+* Convert images to NumPy arrays and save them in batches like:
+
+  * `images_batch_movie_0.npy`
+  * `labels_batch_movie_0.npy`
+* Each label corresponds to the genre string
+  **Outcome:** Efficient `.npy` files with image and label arrays ready for model training.
+
+---
+
+### **STEP 4: CNN Model Training**
+
+**Objective:** Train a CNN model on the preprocessed image and label batches.
+**Details:**
+
+* Load `.npy` image and label batches from Step 3
+* Encode genre strings into integers using `LabelEncoder`
+* One-hot encode labels using `to_categorical()`
+* Define and compile a CNN model:
+  `Conv2D → MaxPool → Flatten → Dense`
+* Train and save model as:
+
+  * `album_movie_classifier.h5`
+    **Outcome:** A trained `.h5` model to classify movie poster genres.
+
+---
+
+### **STEP 5: Real-Time Poster Prediction via Webcam**
+
+**Objective:** Use webcam to detect a poster and display the top predicted genre.
+**Details:**
+
+* Open webcam using `cv2.VideoCapture(0)`
+* Define a **green Face ID–style box** at the center of the frame
+* Capture the image inside the box and resize to **64×64**
+* Predict using the trained CNN model
+* Display predicted genre and confidence on screen (if above threshold)
+  **Outcome:** Real-time webcam classification of posters when held in front of the screen.
+
+---
+
+### **STEP 6: IMDb Link Opening + Face Box Integration**
+
+**Objective:** Extend Phase 5 by opening a browser tab to the corresponding IMDb link.
+**Details:**
+
+* Use prediction to match the genre string in `movie_with_links.csv`
+* Retrieve the `imdb_link` for the predicted genre
+* Open IMDb link using `webbrowser.open()` (trigger only once per detection)
+* Add a **10–15 second delay** before prediction to allow time to place the poster
+* Avoid repeated link openings unless the prediction changes
+  **Outcome:** Real-time poster detection, genre classification, and IMDb redirection.
+
+---
+
+##  FILE STRUCTURE (Ordered)
+
+* **`phase1_cam_feed.py`** – Initializes and tests webcam access using OpenCV
+* **`phase2.py`** – Loads ResNet50 and performs real-time classification using ImageNet
+* **`phase3.py`** – Preprocesses dataset, cleans labels, resizes images, saves `.npy` batches
+* **`phase4.py`** – Loads batches for verification and debugging (shapes, labels)
+* **`train_model.py`** – Trains EfficientNetB0 on `.npy` files, saves `.h5` model and label mappings
+* *(Optional)* **`image_classifier.py`** – Tests image classification using the trained model
+* **`webcam_predictor_phase6.py`** – Real-time genre prediction with motion detection and green box
+* **`gui_phase7.py`** – Tkinter GUI showing prediction, clickable IMDb link, and delay setup
+
+---
+
+##  LIMITATIONS AND FUTURE WORKINGS
+
+### **Known Limitations:**
+
+* **Low Accuracy:** Model often outputs same genre (e.g., "Drama") due to class imbalance
+* **IMDb Link Mismatch:** Only first match of genre is used (can be inaccurate)
+* **Poster-Only Support:** Faces, scenery, and blurred images are not detected
+* **Low Resolution (64×64):** Limits detail; higher resolution could improve performance
+
+### **Planned Improvements:**
+
+* Enhance classification via **multi-label encoding** or **title recognition**
+* Add support for **Spotify album recognition** with separate model
+* Integrate **Tkinter GUI** with clickable links and thumbnails
+* Use **YOLOv8/MediaPipe** for precise poster detection
+* Optimize model for **low-light webcam** and **mobile compatibility**
 
