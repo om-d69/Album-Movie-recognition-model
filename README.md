@@ -112,6 +112,7 @@ Adds logic to prevent repeated link openings unless the prediction changes.
 Outcome: Real-time genre classification AND browser redirection to IMDb — movie poster.
 
 **FILE STRUCTURE DEFINED(ordered):**
+
 phase1_cam_feed.py: Initializes and tests your system’s webcam using OpenCV to confirm camera access.
 phase2.py: Loads the ResNet50 model and performs real-time image classification using webcam frames with basic predictions from the ImageNet dataset.
 phase3.py: Preprocesses the MoviePosters_Raman dataset: reads the CSV, cleans up labels, resizes images, and saves them in batch .npy files for efficient training.
