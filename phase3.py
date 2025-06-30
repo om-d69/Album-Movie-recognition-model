@@ -1,91 +1,78 @@
-import os
 import cv2
 import numpy as np
+import tensorflow as tf
+import webbrowser
 import pandas as pd
-from tensorflow.keras.preprocessing import image
+import os
 
+#  CONFIGURATION 
+PROJECT_DIR = r"C:\Users\omdes\Documents\Om\opencvfun\opencv_album_recog_proj"
+MODEL_PATH = os.path.join(PROJECT_DIR, "album_movie_classifier.h5")
+LABELS_PATH = os.path.join(PROJECT_DIR, "train_fixed.csv")  # just for class labels
+LINKS_CSV_PATH = os.path.join(PROJECT_DIR, "movie_with_links.csv")
+CONFIDENCE_THRESHOLD = 0.20
 
-PROJECT_DIR = "C:\\Users\\omdes\\Documents\\Om\\opencvfun\\opencv_album_recog_proj"
+# LOAD DATA 
+model = tf.keras.models.load_model(MODEL_PATH)
+df_links = pd.read_csv(LINKS_CSV_PATH)
+class_labels = pd.read_csv(LABELS_PATH).columns[2:]  # Skip filename & genre
 
+# VIDEO CAPTURE 
+cap = cv2.VideoCapture(0)
+link_opened = False  # Ensure link opens only once per detection
 
-MOVIE_DATASET_PATH = os.path.join(PROJECT_DIR, "MoviePosters_raman", "Multi_Label_dataset", "images")
-MOVIE_CSV_PATH = os.path.join(PROJECT_DIR, "MoviePosters_raman", "Multi_Label_dataset", "train.csv")
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
 
+    # Define scanning area like FaceID
+    h, w, _ = frame.shape
+    box_size = 250
+    x1 = w // 2 - box_size // 2
+    y1 = h // 2 - box_size // 2
+    x2 = x1 + box_size
+    y2 = y1 + box_size
 
-def read_csv_with_fallback_encoding(file_path, encodings=['utf-8', 'latin1', 'cp1252', 'ISO-8859-1']):
-    for encoding in encodings:
-        try:
-            print(f"Trying to read {file_path} with {encoding} encoding...")
-            return pd.read_csv(file_path, encoding=encoding)
-        except UnicodeDecodeError:
-            print(f"Failed with {encoding} encoding, trying next...")
+    # Draw green detection box
+    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-    print("All standard encodings failed. Using utf-8 with errors='replace'...")
-    return pd.read_csv(file_path, encoding='utf-8', errors='replace')
+    # Crop and preprocess
+    roi = frame[y1:y2, x1:x2]
+    if roi.shape[0] != 0 and roi.shape[1] != 0:
+        img = cv2.resize(roi, (64, 64))
+        img_array = tf.keras.preprocessing.image.img_to_array(img)
+        img_array = np.expand_dims(img_array / 255.0, axis=0)
 
+        predictions = model.predict(img_array)[0]
+        max_index = np.argmax(predictions)
+        max_conf = predictions[max_index]
+        predicted_class = class_labels[max_index]
 
-print(" Cleaning up old movie batch files...")
-for file in os.listdir(PROJECT_DIR):
-    if file.startswith("images_batch_movie") or file.startswith("labels_batch_movie"):
-        os.remove(os.path.join(PROJECT_DIR, file))
-        print(f"🗑️ Deleted {file}")
+        # Show prediction only if confidence is high enough
+        if max_conf > CONFIDENCE_THRESHOLD:
+            label_text = f"{predicted_class} ({max_conf*100:.1f}%)"
+            cv2.putText(frame, label_text, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
+            # Open link only once
+            if not link_opened:
+                # Try to match genre to a row and get corresponding IMDb link
+                match_row = df_links[df_links['genre'] == predicted_class]
+                if not match_row.empty:
+                    imdb_link = match_row.iloc[0]['imdb_link']
+                    webbrowser.open(imdb_link)
+                    link_opened = True
+        else:
+            link_opened = False  # Reset if low confidence
+    else:
+        link_opened = False
 
-print(" Loading movie CSV...")
-movie_labels = read_csv_with_fallback_encoding(MOVIE_CSV_PATH)
+    cv2.imshow("Album/Movie Recognizer", frame)
 
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
-if not {'filename', 'genre'}.issubset(movie_labels.columns):
-    raise ValueError("CSV must contain 'filename' and 'genre' columns.")
+cap.release()
+cv2.destroyAllWindows()
 
-
-movie_labels = movie_labels[movie_labels['filename'].notna()]
-
-
-movie_labels.to_csv(os.path.join(PROJECT_DIR, "MoviePosters_Raman_fixed.csv"), index=False)
-
-
-def save_batches(folder_path, labels_df, label_key, prefix, batch_size=5000):
-    images, labels = [], []
-    batch_count = 0
-    processed = 0
-
-    for idx, row in labels_df.iterrows():
-        filename = str(row['filename']).strip()
-        label = row[label_key]
-        img_path = os.path.join(folder_path, filename)
-
-        if not os.path.exists(img_path):
-            print(f" Image not found: {img_path}")
-            continue
-
-        img = cv2.imread(img_path)
-        if img is None:
-            print(f" Failed to read image: {img_path}")
-            continue
-
-        img = cv2.resize(img, (64, 64))
-        img = img.astype(np.uint8)
-
-        images.append(img)
-        labels.append(label)
-        processed += 1
-
-        if len(images) == batch_size:
-            np.save(os.path.join(PROJECT_DIR, f"images_batch_{prefix}_{batch_count}.npy"), np.array(images, dtype=np.uint8))
-            np.save(os.path.join(PROJECT_DIR, f"labels_batch_{prefix}_{batch_count}.npy"), np.array(labels))
-            print(f" Saved batch {batch_count} with {len(images)} images")
-            images, labels = [], []
-            batch_count += 1
-
-    if images:
-        np.save(os.path.join(PROJECT_DIR, f"images_batch_{prefix}_{batch_count}.npy"), np.array(images, dtype=np.uint8))
-        np.save(os.path.join(PROJECT_DIR, f"labels_batch_{prefix}_{batch_count}.npy"), np.array(labels))
-        print(f" Saved final batch {batch_count} with {len(images)} images")
-
-    print(f" Done processing {processed} images from {prefix} dataset.")
-
-# Save only movie batches
-print(" Processing movie dataset...")
-save_batches(MOVIE_DATASET_PATH, movie_labels, 'genre', 'movie')
 
