@@ -169,7 +169,10 @@ How to Run
 	1.	Clone this repo
 	2.	Ensure your webcam works with OpenCV
    3.	Place all files in the structure above
-	4.	Run the main script:
+	4.	Run the main script:     webcam_predictor_phase6.py
+   	5.	Show a clear movie poster on your phone inside the green box. If the confidence is high, the link will open automatically.
+
+
 
 
 ##  LIMITATIONS AND FUTURE WORKINGS
