@@ -165,16 +165,16 @@ Sure! Here's your neatly formatted and structured project procedure, exactly as 
 * **`gui_phase7.py`** – Tkinter GUI showing prediction, clickable IMDb link, and delay setup
 
 ---
-How to Run
-Clone this repo
+**How to Run**
+1.Clone this repo
 
-Ensure your webcam works with OpenCV
+2.Ensure your webcam works with OpenCV
 
-Place all files in the structure above
+3.Place all files in the structure above
 
-Run the main script: gui_phase7.py
+4.Run the main script: gui_phase7.py
 
-Show a clear movie poster on your phone inside the green box. If the confidence is high, the link will open automatically.
+5.Show a clear movie poster on your phone inside the green box. If the confidence is high, the link will open automatically.
 
 
 
